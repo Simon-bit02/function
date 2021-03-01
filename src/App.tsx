@@ -1,39 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import faker, { fake } from 'faker';
+import arrayMove from 'array-move';
+interface P {}
 
-interface AppProps {}
 
-function App({}: AppProps) {
-  // Create the count state.
-  const [count, setCount] = useState(0);
-  // Create the counter (+1 every second).
-  useEffect(() => {
-    const timer = setTimeout(() => setCount(count + 1), 1000);
-    return () => clearTimeout(timer);
-  }, [count, setCount]);
-  // Return the App component.
+
+function App(props: P) {
+  const [people, setPeople] = useState(
+    new Array(20).fill({}).map((d)=> faker.name.findName())
+  );
+
+  const addPeople = ()=> {
+    const newPeople = faker.name.findName();
+    setPeople([...people, newPeople]);
+  };
+
+  function removePeople (index: number) {
+    const result = people.map((person, jdx) => {
+      if (index === jdx) {
+        return <div />;
+      } else {
+        return person;
+      }
+    });
+    setPeople(result);
+  }
+
+  function moveUp(){
+      setPeople(arrayMove(people, 1, 2));
+  }
+
+  function moveDown(){
+
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <p>
-          Page has been open for <code>{count}</code> seconds.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </p>
-      </header>
+    <div className="p-3">
+      {people.map((d, index)=>(
+        <div className="flex py-1">
+          <div className="flex-grow">{d}</div>
+          <button className="bg-red-500 ml-2" key={index} onClick={()=>removePeople(index)} >Remove</button>
+          <button className="bg-gray-400 ml-2" onClick={moveUp}>Up</button>
+          <button className="bg-gray-400 ml-2">Down</button>
+        </div>
+      ))}
+      <button className="bg-blue-400" onClick={addPeople}>Add person</button>
     </div>
   );
 }
