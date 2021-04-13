@@ -1,164 +1,99 @@
-import React, {useState,useCallback,} from 'react';
-import classNames from 'classnames';
-
-interface Event {
-  status: 'LAMPADINA_SPENTA' | 'LAMPADINA_ACCESA';
-  statusContatore: 'CONTATORE_ACCESO' | 'CONTATORE_SPENTO';
-  time: Date;
-}
-
-interface Command {
-  type: string; 
-  time: Date;
-}
-
-function Button (props: {
-  text: string;
-  className: string;
-  onClick: () => void;
-}) {
-  const className = classNames(
-    'px-2 py-1 cursor-pointer m-1 rounded',
-    props.className,
-  );
-  return(
-    <div className={className} onClick={props.onClick}>
-      {props.text}
-    </div>
-  );
-}
-
-function Contatore(props: {
-  text: String,
-  onClick: () => void;
-}) {
-  return(
-    <div className="bg-gray-400 hover:bg-gray-300 px-2 py-1 cursor-pointer m-1 rounded" onClick={props.onClick}>
-      {props.text}
-    </div>
-  );
-}
+import React, {
+  useState,
+  useReducer,
+  useMemo,
+  useEffect,
+  useLayoutEffect,
+  useContext,
+  useCallback,
+} from 'react';
+import './App.css';
+import faker, { date } from 'faker';
+import _ from 'lodash/fp';
+//import classNames from 'classnames';
+import {
+  Button,
+  Intent,
+  Spinner,
+  Navbar,
+  Alignment,
+  InputGroup,
+  TextArea,
+  FileInput,
+  Toast,
+  Toaster,
+  Icon,
+  ITagInputProps,
+  TagInput,
+  Menu,
+  MenuItem,
+} from '@blueprintjs/core';
+import { IconName, IconNames } from '@blueprintjs/icons';
+import {
+  DateInput,
+  IDateFormatProps,
+  IDateInputProps,
+} from '@blueprintjs/datetime';
+import { random } from 'lodash';
 
 function App() {
-  const [events, setEvents] = useState<Event[]>([
-    { status: 'LAMPADINA_SPENTA', statusContatore:'CONTATORE_SPENTO', time: new Date() },
-  ]);
-
-  const [commands, setCommands] = useState<Command[]>([
-    { type:'Spegnimento', time: new Date() },
-  ])
-
-  
-
-  /*const CommandBtn = useCallback(
-    () => {
-      if(commands[commands.length-1].type === 'Accensione'){
-        return(
-          <div>Hai acceso la lampadina</div>
-        );
-      }else
-        return(
-          <div>Hai spento la lampadina</div>
-        );
-    },
-    [commands],
-  ); */
-  
-  const ContatoreON = useCallback(
-    () => {
-      if(commands[commands.length-1].type === 'Spegnimento'){
-        setCommands([
-          ...commands,
-          {type: 'Accensione', time: new Date()},
-       ])
-        setEvents([
-          ...events,
-          {status:'LAMPADINA_SPENTA', statusContatore: 'CONTATORE_ACCESO', time: new Date()},
-        ])
-      }
-    },
-    [commands],
-  )
-
-  const ContatoreOFF = useCallback(
-    () => {
-      if(commands[commands.length-1].type === 'Accensione'){
-        setCommands([
-          ...commands,
-          {type: 'Spegnimento', time: new Date()},
-        ])
-        setEvents([
-          ...events,
-          {status:'LAMPADINA_SPENTA', statusContatore: 'CONTATORE_SPENTO', time: new Date()},
-        ])
-      }
-    },
-    [commands],
-  )
-
-  const LightOn = useCallback(
-    () => {
-      if(events[events.length-1].statusContatore==='CONTATORE_ACCESO')
-      if (events[events.length-1].status === 'LAMPADINA_SPENTA') {
-        setEvents([
-          ...events,
-          { status: 'LAMPADINA_ACCESA', statusContatore: 'CONTATORE_ACCESO', time: new Date() },
-        ]);
-        setCommands([
-          ...commands,
-          {type: 'Accensione', time: new Date()},
-        ]);
-      }
-    },
-    [events, commands],
-  );
-  
-  const LightOff = useCallback(
-    () => {
-      if (events[events.length-1].status === 'LAMPADINA_ACCESA') {
-        setEvents([
-          ...events,
-          { status: 'LAMPADINA_SPENTA', statusContatore: 'CONTATORE_ACCESO', time: new Date() },
-        ]);
-        setCommands([
-          ...commands,
-          {type: 'Spegnimento', time: new Date()},
-        ]);
-      }
-      
-    },
-    [events, commands],
-  );
-
   return (
-    <>
-      <div className="flex flex-grow m-3">
-        LAMPADINA
-        <Button className="bg-green-500 hover:bg-green-300" text="Accendi" onClick={LightOn}/>
-        <Button className="bg-red-500 hover:bg-red-300" text="Spegni" onClick={LightOff}/>
-        <button
-          className="bg-gray-500 px-2 rounded m-1"
-          onClick={() => {
-            console.log(events);
-          }}
-        >
-          Controlla gli eventi
-        </button>
-        <button
-          className="bg-gray-500 px-2 rounded m-1"
-          onClick={() => {
-            console.log(commands);
-          }}
-        >
-          Controlla i comandi
-        </button>
+    <div className="flex flex-col">
+      <div>
+        <Navbar>
+          <Navbar.Group align={Alignment.LEFT}>
+            <Navbar.Heading>
+              Faketube
+              <Icon className="mx-1" icon="video" color="red" />
+            </Navbar.Heading>
+            <Navbar.Divider />
+            <Menu large={false}>
+              <MenuItem icon="menu">
+                <MenuItem text="Impostazioni" icon="cog" />
+                <MenuItem text="Account" icon="user" />
+                <MenuItem text="Esci dal tuo Account" icon="log-out" />
+              </MenuItem>
+            </Menu>
+            <Button className="bp3-minimal" icon="home" text="Home" />
+            <Button className="bp3-minimal" icon="mobile-video" text="New" />
+            <input
+              className="bp3-input m-2"
+              placeholder="Search videos"
+              type="Search"
+            />
+          </Navbar.Group>
+        </Navbar>
       </div>
-      <div className="flex flex-grow px-3">
-        CONTATORE
-        <Contatore text="Accendi" onClick={ContatoreON}/>
-        <Contatore text="Spegni" onClick={ContatoreOFF}/>
+      <div className="py-9 px-4 flex-col">
+        <label>
+          Upload Video
+          <InputGroup className="max-w-md" placeholder="add title"></InputGroup>
+        </label>
+        <TextArea
+          className="my-6"
+          placeholder="add comments"
+          large={true}
+        ></TextArea>
       </div>
-    </>
+      <div className="px-4">
+        <FileInput
+          className=""
+          disabled={false}
+          text="Choose file..."
+        ></FileInput>
+        <Button className="mx-5" disabled={true} text="Upload file" />
+      </div>
+      <div className="py-9 px-4">
+        <label>
+          Seleziona la data
+          <DateInput
+            placeholder="m/d/Y"
+            defaultValue={new Date()}
+            parseDate={(str) => new Date(str)}
+          />
+        </label>
+      </div>
+    </div>
   );
 }
 
